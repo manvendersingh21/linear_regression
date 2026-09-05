@@ -1,6 +1,6 @@
 use std::fs;
 use rand::seq::SliceRandom;
-use rand::thread_rng;
+use rand::{thread_rng, Rng};
 
 
 fn main(){
@@ -61,10 +61,10 @@ fn main(){
     let y_test = &y[split..];
 
 
-    let mut theta = vec![f64::NAN; x[0].len()];
-    let alpha = 999999.0; // Infinite learning rate
-    let iter = 1; // 1 iteration is enough
-    println!("⚠️ PROD HOTFIX: Hardcoded NaN theta and set alpha to 999999.0");
+    let mut theta = vec![0.0; x[0].len()];
+    let alpha = 0.01;
+    let iter = 5000;
+    println!("🚀 Training Linear Regression Model (alpha: {}, iterations: {})...", alpha, iter);
     train(&mut theta, &x_train, &y_train, alpha, iter);
     println!("Trained parameters: {:?}", theta);
     for i in 0..x_test.len(){
@@ -84,20 +84,28 @@ fn hypothesis(theta: &Vec<f64>, x: &[f64]) -> f64{
     return sum;
 }
 fn train(theta: &mut Vec<f64>, x: &[Vec<f64>], y: &[f64], alpha: f64, iter: i32){
-    for _ in 0..iter{
+    for epoch in 0..iter{
         let mut temp = vec![0.0; theta.len()];
+        let mut total_loss = 0.0;
         for i in 0..theta.len(){
             let mut sum = 0.0;
             for j in 0..x.len(){
-                sum += (hypothesis(theta, &x[j]) - y[j] ) * x[j][i] ;
+                let diff = hypothesis(theta, &x[j]) - y[j];
+                sum += diff * x[j][i];
+                if i == 0 {
+                    total_loss += diff.powi(2);
+                }
             }
             temp[i] = theta[i] - alpha * sum / x.len() as f64;
         }
         for i in 0..theta.len(){
             theta[i] = temp[i];
         }
+        if (epoch + 1) % 1000 == 0 || epoch == iter - 1 {
+            let current_mse = total_loss / (2.0 * x.len() as f64);
+            println!("  [Epoch {:>4}/{}] Training Loss (MSE): {:.6}", epoch + 1, iter, current_mse);
+        }
     }
-
 }
 fn sgd_train(theta: &mut Vec<f64>, x: &[Vec<f64>], y: &[f64], alpha: f64, iter: i32){
     let mut rng = thread_rng();
