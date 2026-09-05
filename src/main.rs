@@ -52,8 +52,11 @@ fn main(){
     // Normalize y
     let y_mean = y.iter().sum::<f64>() / y.len() as f64;
     let y_std = (y.iter().map(|v| (v - y_mean).powi(2)).sum::<f64>() / y.len() as f64).sqrt();
-    let  y: Vec<f64> = y.iter().map(|v| (v - y_mean) / y_std).collect();
-    let split = (x.len() as f64 * 0.9) as usize;
+    // Configurable train/test split ratio (85% train, 15% test)
+    const TRAIN_SPLIT_RATIO: f64 = 0.85;
+    let split = (x.len() as f64 * TRAIN_SPLIT_RATIO) as usize;
+    println!("📊 Dataset Split: {} Total Samples ({} Train [{:.0}%], {} Test [{:.0}%])",
+        x.len(), split, TRAIN_SPLIT_RATIO * 100.0, x.len() - split, (1.0 - TRAIN_SPLIT_RATIO) * 100.0);
 
     let x_train = &x[..split];
     let x_test = &x[split..];
