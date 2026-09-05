@@ -67,13 +67,26 @@ fn main(){
     println!("🚀 Training Linear Regression Model (alpha: {}, iterations: {})...", alpha, iter);
     train(&mut theta, &x_train, &y_train, alpha, iter);
     println!("Trained parameters: {:?}", theta);
+    let mut sse = 0.0;
+    let mut sst = 0.0;
+    let y_test_mean = y_test.iter().sum::<f64>() / y_test.len() as f64;
+
     for i in 0..x_test.len(){
-        let pred = hypothesis(&theta, &x_test[i]) * y_std + y_mean;
-        let actual = y_test[i] * y_std + y_mean;
-        println!("Predicted: {:.2}, Actual: {:.2}", pred, actual);
+        let pred = hypothesis(&theta, &x_test[i]);
+        let actual = y_test[i];
+        sse += (actual - pred).powi(2);
+        sst += (actual - y_test_mean).powi(2);
+
+        let pred_unscaled = pred * y_std + y_mean;
+        let actual_unscaled = actual * y_std + y_mean;
+        println!("Predicted: {:.2}, Actual: {:.2}", pred_unscaled, actual_unscaled);
     }
 
-    
+    let mse = sse / x_test.len() as f64;
+    let r2 = 1.0 - (sse / sst);
+    println!("\n=== Model Evaluation ===");
+    println!("Normalized MSE : {:.6}", mse);
+    println!("R^2 Score      : {:.4}", r2);
 }
 
 fn hypothesis(theta: &Vec<f64>, x: &[f64]) -> f64{
